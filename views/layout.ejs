@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= typeof title != 'undefined' ? title : 'Moestuin Verhuur' %></title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/beschikbaar">Beschikbaar</a></li>
+                <li><a href="/huren">Huren</a></li>
+                <li><a href="/informatie">Informatie</a></li>
+                <li><a href="/contact">Contact</a></li>
+                <li><a href="/groenteselectie">Groenteselectie</a></li>
+                <li><a href="/mijnMoestuinUpdates">Mijn Moestuin Updates</a></li>
+            </ul>
+            <% if (typeof user !== 'undefined' && user) { %>
+                <div class="logout-container">
+                    <a href="/juser/logout" class="logout-button">Uitloggen</a>
+                </div>
+            <% } %>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container"></div>
+        <%- body %>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Moestuin Verhuur. Alle rechten voorbehouden.</p>
+    </footer>
+</body>
+</html>

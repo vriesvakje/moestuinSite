@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Moestuin Verhuur</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Login</h2>
+        
+        <% if(typeof errors != 'undefined'){ %>
+            <% errors.forEach(function(error) { %>
+                <div class="alert alert-danger"><%= error.msg %></div>
+            <% }); %>
+        <% } %>
+
+        <% if(success_msg != ''){ %>
+            <div class="alert alert-success"><%= success_msg %></div>
+        <% } %>
+
+        <% if(error_msg != ''){ %>
+            <div class="alert alert-danger"><%= error_msg %></div>
+        <% } %>
+
+        <% if(error != ''){ %>
+            <div class="alert alert-danger"><%= error %></div>
+        <% } %>
+
+        <form action="/juser/login" method="POST">
+            <div>
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div>
+                <label for="password">Wachtwoord</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit">Login</button>
+        </form>
+        
+        <p>Nog geen account? <a href="/juser/register">Registreer hier</a></p>
+    </div>
+</body>
+</html>

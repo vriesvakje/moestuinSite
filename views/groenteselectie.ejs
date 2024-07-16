@@ -1,0 +1,101 @@
+<h1>Kies Je Groenten</h1>
+<p>Selecteer de groenten die je in je persoonlijke moestuin wilt laten groeien. Wij zorgen ervoor dat ze perfect worden gekweekt!</p>
+
+<div class="vegetable-grid">
+    <div class="vegetable-card">
+        <img src="https://page-images.websim.ai/Tomaat_1024x847xUjSTjLyJRSfAkP9YQx70fc57c9626ba.jpg" alt="Tomaat" alt="Tomaat">
+        <h3>Tomaat</h3>
+        <p>Zoete, sappige tomaten perfect voor salades en sauzen.</p>
+        <button class="select-btn" onclick="selectVegetable('Tomaat')">Selecteer</button>
+    </div>
+    <div class="vegetable-card">
+        <img src="https://page-images.websim.ai/Sla_1024x847xUjSTjLyJRSfAkP9YQxc53b662c9cdcf.jpg" alt="Sla">
+        <h3>Sla</h3>
+        <p>Knapperige, frisse sla voor de perfecte basis van elke salade.</p>
+        <button class="select-btn" onclick="selectVegetable('Sla')">Selecteer</button>
+    </div>
+    <div class="vegetable-card">
+        <img src="https://page-images.websim.ai/Wortel_1024x847xUjSTjLyJRSfAkP9YQx3a24557f93b14.jpg" alt="Wortel">
+        <h3>Wortel</h3>
+        <p>Zoete, knapperige wortels rijk aan vitaminen.</p>
+        <button class="select-btn" onclick="selectVegetable('Wortel')">Selecteer</button>
+    </div>
+    <div class="vegetable-card">
+        <img src="https://replicate.delivery/yhqm/Mwy3RrD3e8xdFSiKt7eNO2yxscGTA6hbgmYs0Epx6zAZZBGTA/out-0.png" alt="Komkommer">
+        <h3>Komkommer</h3>
+        <p>Verfrissende komkommers, perfect voor salades en smoothies.</p>
+        <button class="select-btn" onclick="selectVegetable('Komkommer')">Selecteer</button>
+    </div>
+    <div class="vegetable-card">
+        <img src="https://page-images.websim.ai/Paprika_1024x847xUjSTjLyJRSfAkP9YQx676224797dcde.jpg" alt="Paprika">
+        <h3>Paprika</h3>
+        <p>Kleurrijke, knapperige paprika's vol met vitamine C.</p>
+        <button class="select-btn" onclick="selectVegetable('Paprika')">Selecteer</button>
+    </div>
+    <div class="vegetable-card">
+        <img src="https://page-images.websim.ai/Courgette_1024x847xUjSTjLyJRSfAkP9YQx60d083dc17917.jpg" alt="Courgette">
+        <h3>Courgette</h3>
+        <p>Veelzijdige courgettes, perfect voor zomerse gerechten.</p>
+        <button class="select-btn" onclick="selectVegetable('Courgette')">Selecteer</button>
+    </div>
+</div>
+
+<div id="selected-vegetables">
+    <h2>Jouw Geselecteerde Groenten</h2>
+    <ul id="selected-list"></ul>
+    <button onclick="submitSelection()">Bevestig Selectie</button>
+</div>
+
+<script>
+    let selectedVegetables = [];
+    
+    function selectVegetable(vegetable) {
+        if (!selectedVegetables.includes(vegetable)) {
+            selectedVegetables.push(vegetable);
+            updateSelectedList();
+        }
+    }
+    
+    function removeVegetable(vegetable) {
+        selectedVegetables = selectedVegetables.filter(v => v !== vegetable);
+        updateSelectedList();
+    }
+    
+    function updateSelectedList() {
+        const list = document.getElementById('selected-list');
+        list.innerHTML = '';
+        selectedVegetables.forEach(vegetable => {
+            const li = document.createElement('li');
+            li.textContent = vegetable;
+            const removeBtn = document.createElement('button');
+            removeBtn.textContent = 'Verwijder';
+            removeBtn.onclick = () => removeVegetable(vegetable);
+            li.appendChild(removeBtn);
+            list.appendChild(li);
+        });
+    }
+    
+    function submitSelection() {
+        if (selectedVegetables.length === 0) {
+            alert('Selecteer alstublieft minimaal één groente.');
+            return;
+        }
+        
+        fetch('/save-selection', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ vegetables: selectedVegetables }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert('Je selectie is opgeslagen. Ga naar "Mijn Selectie" om je keuzes te bekijken.');
+            window.location.href = '/mijn-selectie';
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            alert('Er is een fout opgetreden bij het opslaan van je selectie.');
+        });
+    }
+    </script>

@@ -1,0 +1,14 @@
+<h1>Mijn Groenteselectie</h1>
+
+<% if (vegetables && vegetables.length > 0) { %>
+    <p>Je hebt de volgende groenten geselecteerd voor je moestuin:</p>
+    <ul>
+        <% vegetables.forEach(function(vegetable) { %>
+            <li><%= vegetable %></li>
+        <% }); %>
+    </ul>
+<% } else { %>
+    <p>Je hebt nog geen groenten geselecteerd. Ga naar de <a href="/groenteselectie">Groenteselectie</a> pagina om je keuze te maken.</p>
+<% } %>
+
+<a href="/groenteselectie">Terug naar Groenteselectie</a>

@@ -1,0 +1,25 @@
+<h1>Neem Contact Op</h1>
+<p>Heeft u vragen of opmerkingen? Neem gerust contact met ons op.</p>
+
+<h2>Contactgegevens</h2>
+<address class="contact-info">
+    Moestuin Verhuur<br>
+    voltsteaat 174<br>
+    5021 SE tilburg<br>
+    Tel: <a href="tel:06-51795342">06-51795342</a><br>
+    E-mail: <a href="mailto:info@moestuinverhuur.nl">info@moestuinverhuur.nl</a>
+</address>
+
+<h2>Contactformulier</h2>
+<form action="/contact" method="POST">
+    <label for="naam">Naam:</label>
+    <input type="text" id="naam" name="naam" required>
+
+    <label for="email">E-mail:</label>
+    <input type="email" id="email" name="email" required>
+
+    <label for="bericht">Bericht:</label>
+    <textarea id="bericht" name="bericht" required></textarea>
+
+    <button type="submit">Verstuur</button>
+</form>

@@ -1,0 +1,49 @@
+<h1>Mijn Moestuin Updates</h1>
+
+<div class="update-container">
+    <h2>Week 12 Update</h2>
+    <img src="/images/moestuin_week12.jpg" alt="Moestuin in week 12" class="update-image">
+    <div class="progress-bar">
+        <div class="progress" style="width: 60%;"></div>
+    </div>
+    <p>Je moestuin groeit gestaag! De tomatenplanten zijn nu 60 cm hoog en beginnen bloemen te vormen. De sla is bijna klaar voor de eerste oogst.</p>
+    <h3>Deze week hebben we:</h3>
+    <ul class="task-list">
+        <li>De tomatenplanten opgebonden</li>
+        <li>Onkruid verwijderd rond de wortelgroenten</li>
+        <li>Extra compost toegevoegd aan de courgetteplanten</li>
+        <li>De eerste biologische plaagbestrijding uitgevoerd</li>
+    </ul>
+    <p>Volgende week verwachten we de eerste sla te kunnen oogsten. We houden je op de hoogte!</p>
+</div>
+
+<div class="update-container">
+    <h2>Week 11 Update</h2>
+    <img src="/images/moestuin_week11.jpg" alt="Moestuin in week 11" class="update-image">
+    <div class="progress-bar">
+        <div class="progress" style="width: 50%;"></div>
+    </div>
+    <p>Je moestuin begint echt vorm te krijgen! De zaailingen zijn nu goed gevestigd en we zien dagelijks vooruitgang.</p>
+    <h3>Deze week hebben we:</h3>
+    <ul class="task-list">
+        <li>De eerste keer water gegeven met vloeibare meststof</li>
+        <li>Dunning uitgevoerd bij de wortelen en radijsjes</li>
+        <li>Extra stokken geplaatst voor de erwten</li>
+        <li>De grond rond de aardbeienplanten gemulcht</li>
+    </ul>
+    <p>We verwachten over ongeveer 2 weken de eerste oogst van radijsjes en sla. Spannend!</p>
+</div>
+
+<script>
+    // Animatie voor de voortgangsbalk
+    window.onload = function() {
+        let bars = document.getElementsByClassName('progress');
+        for(let bar of bars) {
+            let width = bar.style.width;
+            bar.style.width = '0%';
+            setTimeout(() => {
+                bar.style.width = width;
+            }, 300);
+        }
+    }
+</script>

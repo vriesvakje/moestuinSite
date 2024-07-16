@@ -1,0 +1,19 @@
+<h1>Huur een Moestuin</h1>
+<p>Interesse in het huren van een moestuin? Vul onderstaand formulier in en wij nemen contact met u op.</p>
+
+<form action="/huren" method="POST">
+    <label for="naam">Naam:</label>
+    <input type="text" id="naam" name="naam" required>
+
+    <label for="email">E-mail:</label>
+    <input type="email" id="email" name="email" required>
+
+    <label for="tuingrootte">Gewenste tuingrootte:</label>
+    <select id="tuingrootte" name="tuingrootte">
+        <option value="klein">Klein (tot 20m²)</option>
+        <option value="middel">Middel (20-30m²)</option>
+        <option value="groot">Groot (30m² en groter)</option>
+    </select>
+
+    <button type="submit">Aanvraag indienen</button>
+</form>
