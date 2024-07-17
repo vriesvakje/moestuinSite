@@ -16,15 +16,15 @@
             <% }); %>
         <% } %>
 
-        <% if(success_msg != ''){ %>
+        <% if(typeof success_msg != 'undefined' && success_msg != ''){ %>
             <div class="alert alert-success"><%= success_msg %></div>
         <% } %>
 
-        <% if(error_msg != ''){ %>
+        <% if(typeof error_msg != 'undefined' && error_msg != ''){ %>
             <div class="alert alert-danger"><%= error_msg %></div>
         <% } %>
 
-        <% if(error != ''){ %>
+        <% if(typeof error != 'undefined' && error != ''){ %>
             <div class="alert alert-danger"><%= error %></div>
         <% } %>
 
@@ -40,6 +40,7 @@
             <button type="submit">Login</button>
         </form>
         
+        <p><a href="/forgot-password">Wachtwoord vergeten?</a></p>
         <p>Nog geen account? <a href="/juser/register">Registreer hier</a></p>
     </div>
 </body>

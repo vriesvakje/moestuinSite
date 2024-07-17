@@ -37,4 +37,23 @@ const sendNotificationEmail = async (formData) => {
   }
 };
 
-module.exports = { sendNotificationEmail };
+const sendPasswordResetEmail = async (email, resetUrl) => {
+  const transporter = await createTransporter();
+  
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: 'Wachtwoord Reset voor Moestuin Verhuur',
+    text: `U heeft een wachtwoordreset aangevraagd. Klik op de volgende link om uw wachtwoord te resetten: ${resetUrl}`,
+    html: `
+      <p>U heeft een wachtwoordreset aangevraagd.</p>
+      <p>Klik op de volgende link om uw wachtwoord te resetten:</p>
+      <a href="${resetUrl}">${resetUrl}</a>
+      <p>Deze link is 1 uur geldig.</p>
+    `
+  };
+
+  await transporter.sendMail(mailOptions);
+};
+
+module.exports = { sendNotificationEmail, sendPasswordResetEmail };

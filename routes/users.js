@@ -12,6 +12,8 @@ router.get('/register', (req, res) => res.render('register'));
 
 // Register Handle
 router.post('/register', async (req, res) => {
+  console.log('Registratieroute aangeroepen');
+  console.log('Ontvangen data:', req.body);
   const { name, email, password, password2 } = req.body;
   let errors = [];
 
@@ -40,7 +42,6 @@ router.post('/register', async (req, res) => {
     });
   } else {
     try {
-      // Check if user already exists
       let user = await User.findOne({ email: email });
       if (user) {
         errors.push({ msg: 'Email is al geregistreerd' });
@@ -55,23 +56,14 @@ router.post('/register', async (req, res) => {
         const newUser = new User({
           name,
           email,
-          password
+          password  // Het ongehashte wachtwoord wordt hier opgeslagen
         });
 
-        // Hash Password
-        bcrypt.genSalt(10, (err, salt) => 
-          bcrypt.hash(newUser.password, salt, (err, hash) => {
-            if (err) throw err;
-            // Set password to hashed
-            newUser.password = hash;
-            // Save user
-            newUser.save()
-              .then(user => {
-                req.flash('success_msg', 'Je bent nu geregistreerd en kan inloggen');
-                res.redirect('/juser/login');
-              })
-              .catch(err => console.log(err));
-        }));
+        // Het hashing proces wordt afgehandeld door het User model
+        await newUser.save();
+        console.log('Gebruiker succesvol geregistreerd:', newUser);
+        req.flash('success_msg', 'Je bent nu geregistreerd en kan inloggen');
+        res.redirect('/juser/login');
       }
     } catch (err) {
       console.error('Fout bij registratie:', err);
@@ -82,21 +74,10 @@ router.post('/register', async (req, res) => {
 
 // Login Handle
 router.post('/login', (req, res, next) => {
-  passport.authenticate('local', (err, user, info) => {
-    if (err) {
-      return next(err);
-    }
-    if (!user) {
-      req.flash('error_msg', 'Incorrect email of wachtwoord.');
-      return res.redirect('/juser/login');
-    }
-    req.logIn(user, (err) => {
-      if (err) {
-        return next(err);
-      }
-      req.flash('success_msg', 'Je bent succesvol ingelogd.');
-      return res.redirect('/dashboard');
-    });
+  passport.authenticate('local', {
+    successRedirect: '/dashboard',
+    failureRedirect: '/juser/login',
+    failureFlash: true
   })(req, res, next);
 });
 

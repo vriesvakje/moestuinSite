@@ -78,6 +78,11 @@ app.use((err, req, res, next) => {
   });
 });
 
+const User = require('./models/User');
+const bcrypt = require('bcryptjs');
+
+
+
 // Start the server
 app.listen(port, () => {
   console.log(`Server draait op http://localhost:${port}`);
