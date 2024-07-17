@@ -15,6 +15,8 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  resetPasswordToken: String,
+  resetPasswordExpires: Date,
   date: {
     type: Date,
     default: Date.now
@@ -24,7 +26,6 @@ const UserSchema = new mongoose.Schema({
 UserSchema.pre('save', async function(next) {
   if (this.isModified('password')) {
     this.password = await bcrypt.hash(this.password, 10);
-    console.log('Wachtwoord gehasht in User model:', this.password);
   }
   next();
 });

@@ -131,6 +131,34 @@ router.get('/reset-password/:token', async (req, res) => {
 });
 
 // Reset Password Handle (POST route)
+router.get('/reset-password/:token', async (req, res) => {
+  try {
+    const user = await User.findOne({
+      resetPasswordToken: req.params.token,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      console.log('Invalid or expired token attempted:', req.params.token);
+      req.flash('error_msg', 'Wachtwoord reset token is ongeldig of verlopen.');
+      return res.redirect('/forgot-password');
+    }
+
+    res.render('reset-password', { 
+      title: 'Wachtwoord Resetten',
+      token: req.params.token,
+      error_msg: req.flash('error_msg'),
+      success_msg: req.flash('success_msg'),
+      user: req.user
+    });
+  } catch (error) {
+    console.error('Error in reset password page:', error);
+    req.flash('error_msg', 'Er is een fout opgetreden. Probeer het opnieuw.');
+    res.redirect('/forgot-password');
+  }
+});
+
+// Reset Password Handle (POST route)
 router.post('/reset-password/:token', async (req, res) => {
   try {
     const user = await User.findOne({
@@ -139,26 +167,36 @@ router.post('/reset-password/:token', async (req, res) => {
     });
 
     if (!user) {
+      console.log('Invalid or expired token submitted:', req.params.token);
       req.flash('error_msg', 'Wachtwoord reset token is ongeldig of verlopen.');
       return res.redirect('/forgot-password');
     }
 
-    console.log('User before password reset:', user);
+    const { password, password2 } = req.body;
 
-    if(req.body.password !== req.body.password2) {
-      req.flash('error_msg', 'Wachtwoorden komen niet overeen.');
-      return res.redirect('back');
+    // Validatie
+    if (!password || !password2) {
+      req.flash('error_msg', 'Vul alstublieft alle velden in');
+      return res.redirect(`/reset-password/${req.params.token}`);
     }
 
-    // Set the new password
-    user.password = await bcrypt.hash(req.body.password, 10);
+    if (password !== password2) {
+      req.flash('error_msg', 'Wachtwoorden komen niet overeen');
+      return res.redirect(`/reset-password/${req.params.token}`);
+    }
+
+    if (password.length < 6) {
+      req.flash('error_msg', 'Wachtwoord moet minstens 6 karakters lang zijn');
+      return res.redirect(`/reset-password/${req.params.token}`);
+    }
+
+    // Set new password
+    user.password = password; // Assuming you're using a pre-save hook for hashing
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
-
     await user.save();
 
-    console.log('User after password reset:', user);
-
+    console.log('Password reset successful for user:', user.email);
     req.flash('success_msg', 'Je wachtwoord is succesvol gewijzigd. Je kunt nu inloggen met je nieuwe wachtwoord.');
     res.redirect('/juser/login');
   } catch (error) {
@@ -190,18 +228,50 @@ router.get('/mijn-selectie', ensureAuthenticated, async (req, res) => {
   });
 });
 
-// Test email route
-router.get('/test-email', async (req, res) => {
+router.get('/reset/:token', async (req, res) => {
   try {
-    await sendNotificationEmail({
-      naam: 'Test Gebruiker',
-      email: 'test@example.com',
-      tuingrootte: 'Medium'
+    const user = await User.findOne({
+      resetPasswordToken: req.params.token,
+      resetPasswordExpires: { $gt: Date.now() }
     });
-    res.send('Test e-mail verzonden! Controleer je inbox.');
+
+    if (!user) {
+      req.flash('error_msg', 'Wachtwoord reset token is ongeldig of verlopen.');
+      return res.redirect('/forgot-password');
+    }
+
+    res.render('reset-password', { token: req.params.token });
   } catch (error) {
-    console.error('Fout bij het verzenden van test e-mail:', error);
-    res.status(500).send('Er is een fout opgetreden bij het verzenden van de test e-mail.');
+    console.error('Error in reset password route:', error);
+    req.flash('error_msg', 'Er is een fout opgetreden. Probeer het opnieuw.');
+    res.redirect('/forgot-password');
+  }
+});
+
+router.post('/reset/:token', async (req, res) => {
+  try {
+    const user = await User.findOne({
+      resetPasswordToken: req.params.token,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      req.flash('error_msg', 'Wachtwoord reset token is ongeldig of verlopen.');
+      return res.redirect('/forgot-password');
+    }
+
+    // Set new password
+    user.password = req.body.password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    req.flash('success_msg', 'Je wachtwoord is succesvol gewijzigd. Je kunt nu inloggen met je nieuwe wachtwoord.');
+    res.redirect('/login');
+  } catch (error) {
+    console.error('Error in reset password post route:', error);
+    req.flash('error_msg', 'Er is een fout opgetreden bij het resetten van je wachtwoord. Probeer het opnieuw.');
+    res.redirect('/forgot-password');
   }
 });
 
