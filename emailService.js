@@ -14,11 +14,10 @@ const sendNotificationEmail = async (formData) => {
   try {
     const transporter = await createTransporter();
 
-    const mailOptions = {
-      from: process.env.GMAIL_USER,
-      to: process.env.NOTIFICATION_EMAIL,
-      subject: 'Nieuwe aanvraag voor moestuinhuur',
-      text: `
+    let subject, text;
+    if (formData.tuingrootte) {
+      subject = 'Nieuwe aanvraag voor moestuinhuur';
+      text = `
         Er is een nieuwe aanvraag voor moestuinhuur binnengekomen:
         
         Naam: ${formData.naam}
@@ -26,7 +25,25 @@ const sendNotificationEmail = async (formData) => {
         Gewenste tuingrootte: ${formData.tuingrootte}
         
         Neem zo snel mogelijk contact op met deze persoon.
-      `
+      `;
+    } else {
+      subject = 'Nieuw contactbericht ontvangen';
+      text = `
+        Er is een nieuw contactbericht binnengekomen:
+        
+        Naam: ${formData.naam}
+        E-mail: ${formData.email}
+        Bericht: ${formData.bericht}
+        
+        Gelieve hier zo snel mogelijk op te reageren.
+      `;
+    }
+
+    const mailOptions = {
+      from: process.env.GMAIL_USER,
+      to: process.env.NOTIFICATION_EMAIL,
+      subject: subject,
+      text: text
     };
 
     await transporter.sendMail(mailOptions);
@@ -41,7 +58,7 @@ const sendPasswordResetEmail = async (email, resetUrl) => {
   const transporter = await createTransporter();
   
   const mailOptions = {
-    from: process.env.EMAIL_USER,
+    from: process.env.GMAIL_USER,
     to: email,
     subject: 'Wachtwoord Reset voor Moestuin Verhuur',
     text: `U heeft een wachtwoordreset aangevraagd. Klik op de volgende link om uw wachtwoord te resetten: ${resetUrl}`,

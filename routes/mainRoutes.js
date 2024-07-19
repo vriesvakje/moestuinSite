@@ -36,6 +36,25 @@ router.post('/huren', async (req, res) => {
   }
 });
 
+// route voor verstuuren contact
+router.post('/contact', async (req, res) => {
+  try {
+    console.log('Contact form gegevens:', req.body); // Voor debugging
+    await sendNotificationEmail(req.body);
+    res.render('contact-bevestiging', { 
+      title: 'Bericht Ontvangen', 
+      user: req.user 
+    });
+  } catch (error) {
+    console.error('Fout bij het verwerken van het contactformulier:', error);
+    res.status(500).render('error', { 
+      title: 'Fout', 
+      message: 'Er is een fout opgetreden bij het verwerken van uw bericht. Probeer het later opnieuw.',
+      user: req.user
+    });
+  }
+});
+
 // Informatie pagina
 router.get('/informatie', (req, res) => {
   res.render('informatie', { title: 'Informatie over Moestuinieren', user: req.user });
