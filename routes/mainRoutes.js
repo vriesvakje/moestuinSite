@@ -55,6 +55,12 @@ router.post('/contact', async (req, res) => {
   }
 });
 
+// payment-success route
+router.get('/payment-success', (req, res) => {
+  console.log('Payment success route aangeroepen');
+  res.render('payment-success', { title: 'Betaling Succesvol', user: req.user });
+});
+
 // Informatie pagina
 router.get('/informatie', (req, res) => {
   res.render('informatie', { title: 'Informatie over Moestuinieren', user: req.user });

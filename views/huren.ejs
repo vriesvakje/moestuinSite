@@ -1,6 +1,8 @@
 <h1>Huur een Moestuin</h1>
 <p>Interesse in het huren van een moestuin? Vul onderstaand formulier in en wij nemen contact met u op.</p>
 
+<form action="/payments/create-payment" method="POST">
+
 <form action="/huren" method="POST">
     <label for="naam">Naam:</label>
     <input type="text" id="naam" name="naam" required>
@@ -16,7 +18,9 @@
     </select>
 
     <button type="submit">Aanvraag indienen</button>
-    <form action="/payments/create-payment" method="POST">
+
+
+   
         <button type="submit">Betaal nu</button>
       </form>
 </form>
