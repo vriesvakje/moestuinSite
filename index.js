@@ -9,15 +9,26 @@ const connectDB = require('./db');
 const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minuten
-  max: 200, // Limiet elke IP tot 100 requests per `window` (hier, per 15 minuten)
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-});
-
 const app = express();
 const port = process.env.PORT || 3000;
+
+console.log('Express app is geïnitialiseerd');
+
+// Algemene middleware voor logging
+app.use((req, res, next) => {
+  console.log(`Request ontvangen: ${req.method} ${req.url}`);
+  next();
+});
+
+// Rate limiter
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.use(limiter);
 
 // Passport config
 require('./config/passport')(passport);
@@ -45,7 +56,6 @@ app.use(session({
 // Passport middleware
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(limiter);
 
 // Connect Flash
 app.use(flash());
@@ -64,13 +74,19 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Routes
 const indexRoutes = require('./routes/mainRoutes');
 const userRoutes = require('./routes/users');
+const paymentRoutes = require('./routes/paymentRoutes');
+
+console.log('Routes worden geladen');
 
 app.use('/', indexRoutes);
 app.use('/juser', userRoutes);
+app.use('/payments', paymentRoutes);
+
+console.log('Alle routes zijn toegevoegd aan de app');
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error('Error:', err);
   res.status(500).render('error', { 
     title: 'Fout', 
     message: 'Er is een onverwachte fout opgetreden.',
@@ -78,12 +94,10 @@ app.use((err, req, res, next) => {
   });
 });
 
-const User = require('./models/User');
-const bcrypt = require('bcryptjs');
-
-
-
 // Start the server
 app.listen(port, () => {
   console.log(`Server draait op http://localhost:${port}`);
+  console.log('Server is klaar om requests te ontvangen');
 });
+
+module.exports = app;
