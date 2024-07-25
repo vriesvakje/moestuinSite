@@ -12,16 +12,19 @@ router.post('/create-payment', async (req, res) => {
         value: '10.00' // Vervang dit met het juiste bedrag
       },
       description: 'Moestuin huur',
-      redirectUrl: `${process.env.NGROK_URL}/payment-success`,
+      redirectUrl: `${process.env.NGROK_URL}/payment-open`,
       webhookUrl: `${process.env.NGROK_URL}/payments/webhook`,
       method: 'ideal'
     });
 
     console.log('Mollie betaling gecreëerd:', payment);
-    res.redirect(payment.getCheckoutUrl());
+    res.json({
+      paymentId: payment.id,
+      checkoutUrl: payment.getCheckoutUrl()
+    });
   } catch (error) {
     console.error('Fout bij het maken van de betaling:', error);
-    res.status(500).send('Er is een fout opgetreden bij het verwerken van je betaling');
+    res.status(500).json({ error: 'Er is een fout opgetreden bij het verwerken van je betaling' });
   }
 });
 
@@ -31,24 +34,63 @@ router.post('/webhook', async (req, res) => {
     console.log('Webhook ontvangen voor betaling:', payment.id);
     console.log('Betaling status:', payment.status);
 
-    if (payment.isPaid()) {
-      // Implementeer hier de logica voor een succesvolle betaling
-      console.log('Betaling is succesvol');
-      // Bijvoorbeeld: update de status van de bestelling in je database
-    } else if (payment.isCanceled()) {
-      console.log('Betaling is geannuleerd');
-      // Implementeer hier de logica voor een geannuleerde betaling
+    let redirectUrl;
+    switch(payment.status) {
+      case 'paid':
+        redirectUrl = `${process.env.NGROK_URL}/payment-success`;
+        break;
+      case 'failed':
+        redirectUrl = `${process.env.NGROK_URL}/payment-failed`;
+        break;
+      case 'canceled':
+        redirectUrl = `${process.env.NGROK_URL}/payment-canceled`;
+        break;
+      case 'expired':
+        redirectUrl = `${process.env.NGROK_URL}/payment-expired`;
+        break;
+      case 'open':
+      default:
+        redirectUrl = `${process.env.NGROK_URL}/payment-open`;
     }
 
+    console.log('Redirect URL:', redirectUrl);
     res.status(200).send('OK');
+    
+    // Hier kun je eventueel een functie aanroepen om de gebruiker te redirecten
+    // bijvoorbeeld door een socket-verbinding te gebruiken of door de frontend 
+    // regelmatig de status te laten controleren.
   } catch (error) {
     console.error('Fout in webhook:', error);
     res.status(500).send('Er is een fout opgetreden in de webhook');
   }
 });
 
-router.get('/payment-success', (req, res) => {
-  res.render('payment-success', { title: 'Betaling Succesvol' });
+router.get('/check-payment-status/:paymentId', async (req, res) => {
+  try {
+    const payment = await mollieClient.payments.get(req.params.paymentId);
+    let redirectUrl;
+    switch(payment.status) {
+      case 'paid':
+        redirectUrl = `${process.env.NGROK_URL}/payment-success`;
+        break;
+      case 'failed':
+        redirectUrl = `${process.env.NGROK_URL}/payment-failed`;
+        break;
+      case 'canceled':
+        redirectUrl = `${process.env.NGROK_URL}/payment-canceled`;
+        break;
+      case 'expired':
+        redirectUrl = `${process.env.NGROK_URL}/payment-expired`;
+        break;
+      case 'open':
+      default:
+        redirectUrl = null; // Nog geen redirect nodig
+    }
+    res.json({ redirectUrl });
+  } catch (error) {
+    console.error('Fout bij het controleren van de betalingsstatus:', error);
+    res.status(500).json({ error: 'Er is een fout opgetreden' });
+  }
 });
 
 module.exports = router;

@@ -81,6 +81,13 @@ const paymentRoutes = require('./routes/paymentRoutes');
 
 console.log('Routes worden geladen');
 
+app.get('/initiate-payment', (req, res) => {
+  console.log('Initiate payment route aangeroepen');
+  res.render('initiate-payment');
+});
+
+
+
 app.use('/', indexRoutes);
 app.use('/juser', userRoutes);
 app.use('/payments', paymentRoutes);

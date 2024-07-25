@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Start Betaling</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <h1>Start uw betaling</h1>
+    <button id="payButton">Betaal nu</button>
+
+    <script>
+    function startPayment() {
+        fetch('/payments/create-payment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                // Voeg hier eventuele benodigde betalingsgegevens toe
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Payment created:', data);
+            sessionStorage.setItem('currentPaymentId', data.paymentId);
+            window.location.href = data.checkoutUrl; // Redirect naar de Mollie checkout
+        })
+        .catch(error => {
+            console.error('Error creating payment:', error);
+            alert('Er is een fout opgetreden bij het starten van de betaling. Probeer het opnieuw.');
+        });
+    }
+
+    document.getElementById('payButton').addEventListener('click', startPayment);
+    </script>
+</body>
+</html>

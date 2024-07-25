@@ -57,9 +57,47 @@ router.post('/contact', async (req, res) => {
 
 // payment-success route
 router.get('/payment-success', (req, res) => {
-  console.log('Payment success route aangeroepen');
+  console.log('Payment success route aangeroepen deze');
   res.render('payment-success', { title: 'Betaling Succesvol', user: req.user });
 });
+
+// Payment Open route
+router.get('/payment-open', (req, res) => {
+  console.log('Payment open route aangeroepen');
+  res.render('payment-open', { 
+    title: 'Betaling in Behandeling', 
+    user: req.user 
+  });
+});
+
+// Payment Failed route
+router.get('/payment-failed', (req, res) => {
+  console.log('Payment failed route aangeroepen');
+  res.render('payment-failed', { 
+    title: 'Betaling Mislukt', 
+    user: req.user 
+  });
+});
+
+// Payment Canceled route
+router.get('/payment-canceled', (req, res) => {
+  console.log('Payment canceled route aangeroepen');
+  res.render('payment-canceled', { 
+    title: 'Betaling Geannuleerd', 
+    user: req.user 
+  });
+});
+
+// Payment Expired route
+router.get('/payment-expired', (req, res) => {
+  console.log('Payment expired route aangeroepen');
+  res.render('payment-expired', { 
+    title: 'Betaling Verlopen', 
+    user: req.user 
+  });
+});
+
+
 
 // Informatie pagina
 router.get('/informatie', (req, res) => {
