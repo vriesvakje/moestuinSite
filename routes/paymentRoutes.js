@@ -18,8 +18,11 @@ router.post('/create-payment', async (req, res) => {
     });
 
     console.log('Mollie betaling gecreëerd:', payment);
+    
+    // Sla de paymentId op in de sessie
+    req.session.paymentId = payment.id;
+    
     res.json({
-      paymentId: payment.id,
       checkoutUrl: payment.getCheckoutUrl()
     });
   } catch (error) {
@@ -37,25 +40,25 @@ router.post('/webhook', async (req, res) => {
     let redirectUrl;
     switch(payment.status) {
       case 'paid':
-        redirectUrl = `${process.env.NGROK_URL}/payment-success`;
+        redirectUrl = `${process.env.NGROK_URL}/payments/payment-success`;
         break;
       case 'failed':
-        redirectUrl = `${process.env.NGROK_URL}/payment-failed`;
+        redirectUrl = `${process.env.NGROK_URL}/payments/payment-failed`;
         break;
       case 'canceled':
-        redirectUrl = `${process.env.NGROK_URL}/payment-canceled`;
+        redirectUrl = `${process.env.NGROK_URL}/payments/payment-canceled`;
         break;
       case 'expired':
-        redirectUrl = `${process.env.NGROK_URL}/payment-expired`;
+        redirectUrl = `${process.env.NGROK_URL}/payments/payment-expired`;
         break;
       case 'open':
       default:
-        redirectUrl = `${process.env.NGROK_URL}/payment-open`;
+        redirectUrl = `${process.env.NGROK_URL}/payments/payment-open`;
     }
 
     console.log('Redirect URL:', redirectUrl);
     res.status(200).send('OK');
-    
+
     // Hier kun je eventueel een functie aanroepen om de gebruiker te redirecten
     // bijvoorbeeld door een socket-verbinding te gebruiken of door de frontend 
     // regelmatig de status te laten controleren.
@@ -65,31 +68,47 @@ router.post('/webhook', async (req, res) => {
   }
 });
 
-router.get('/check-payment-status/:paymentId', async (req, res) => {
+router.get('/check-payment-status', async (req, res) => {
   try {
-    const payment = await mollieClient.payments.get(req.params.paymentId);
+    if (!req.session.paymentId) {
+      console.log('Geen paymentId gevonden in sessie');
+      return res.redirect('/payment-failed');
+    }
+
+    console.log('Controleren van betaling met ID:', req.session.paymentId);
+    const payment = await mollieClient.payments.get(req.session.paymentId);
+    console.log('Betaling status:', payment.status);
+
     let redirectUrl;
     switch(payment.status) {
       case 'paid':
-        redirectUrl = `${process.env.NGROK_URL}/payment-success`;
+        redirectUrl = '/payment-success';
         break;
       case 'failed':
-        redirectUrl = `${process.env.NGROK_URL}/payment-failed`;
+        redirectUrl = '/payment-failed';
         break;
       case 'canceled':
-        redirectUrl = `${process.env.NGROK_URL}/payment-canceled`;
+        redirectUrl = '/payment-canceled';
         break;
       case 'expired':
-        redirectUrl = `${process.env.NGROK_URL}/payment-expired`;
+        redirectUrl = '/payment-expired';
         break;
       case 'open':
       default:
-        redirectUrl = null; // Nog geen redirect nodig
+        redirectUrl = '/payment-open';
     }
-    res.json({ redirectUrl });
+
+    console.log('Redirecting to:', redirectUrl);
+    
+    if (redirectUrl !== '/payment-open') {
+      // Als de betaling is afgerond, verwijder de paymentId uit de sessie
+      delete req.session.paymentId;
+    }
+
+    res.redirect(redirectUrl);
   } catch (error) {
     console.error('Fout bij het controleren van de betalingsstatus:', error);
-    res.status(500).json({ error: 'Er is een fout opgetreden' });
+    res.redirect('/payment-failed');
   }
 });
 
