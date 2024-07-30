@@ -1,3 +1,4 @@
+<!-- layout.ejs -->
 <!DOCTYPE html>
 <html lang="nl">
 <head>
@@ -7,32 +8,39 @@
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-    <header>
-        <nav>
-            <ul class="nav-links">
-                <li><a href="/">Home</a></li>
-                <li><a href="/beschikbaar">Beschikbaar</a></li>
-                <li><a href="/huren">Huren</a></li>
-                <li><a href="/informatie">Informatie</a></li>
-                <li><a href="/contact">Contact</a></li>
-                <li><a href="/groenteselectie">Groenteselectie</a></li>
-                <li><a href="/mijnMoestuinUpdates">Mijn Moestuin Updates</a></li>
-            </ul>
-            <% if (typeof user !== 'undefined' && user) { %>
-                <div class="logout-container">
-                    <a href="/juser/logout" class="logout-button">Uitloggen</a>
+    <div class="page-wrapper">
+        <header>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/beschikbaar">Beschikbaar</a></li>
+                    <li><a href="/huren">Huren</a></li>
+                    <li><a href="/informatie">Informatie</a></li>
+                    <li><a href="/contact">Contact</a></li>
+                    <% if (typeof user !== 'undefined' && user) { %>
+                        <li><a href="/dashboard">Dashboard</a></li>
+                    <% } %>
+                </ul>
+                <div class="nav-buttons">
+                    <a href="/initiate-payment" class="button donate-button">Doneer</a>
+                    <% if (typeof user !== 'undefined' && user) { %>
+                        <a href="/juser/logout" class="logout-button">Uitloggen</a>
+                    <% } else { %>
+                        <a href="/juser/login" class="login-button">Inloggen</a>
+                    <% } %>
                 </div>
-            <% } %>
-        </nav>
-    </header>
-
-    <main>
-        <div class="container"></div>
-        <%- body %>
-    </main>
-
-    <footer>
-        <p>&copy; 2024 Moestuin Verhuur. Alle rechten voorbehouden.</p>
-    </footer>
+            </nav>
+        </header>
+    
+        <main>
+            <div class="container">
+            <%- body %>
+            </div>
+        </main>
+    
+        <footer>
+            <p>&copy; 2024 Moestuin Verhuur. Alle rechten voorbehouden.</p>
+        </footer>
+    </div>
 </body>
 </html>

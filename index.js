@@ -4,7 +4,7 @@ const path = require('path');
 const mongoose = require('mongoose');
 const passport = require('passport');
 const session = require('express-session');
-const flash = require('connect-flash');
+const flash = require('express-flash');
 const connectDB = require('./db');
 const rateLimit = require('express-rate-limit');
 require('dotenv').config();
@@ -63,13 +63,7 @@ app.use(passport.session());
 // Connect Flash
 app.use(flash());
 
-// Global variables for flash messages
-app.use((req, res, next) => {
-  res.locals.success_msg = req.flash('success_msg');
-  res.locals.error_msg = req.flash('error_msg');
-  res.locals.error = req.flash('error');
-  next();
-});
+
 
 // Static files
 app.use(express.static(path.join(__dirname, 'public')));

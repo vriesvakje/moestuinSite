@@ -1,18 +1,23 @@
-<!DOCTYPE html>
-<html lang="nl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Moestuin Verhuur</title>
-</head>
-<body>
-    <h1>Welkom bij je Dashboard</h1>
-    <% if(user){ %>
-        <p>Hallo, <%= user.username %>!</p>
-        <p>Je bent ingelogd met het e-mailadres: <%= user.email %></p>
-    <% } %>
-    <a href="/juser/logout">Uitloggen</a>
-    <br>
-    <a href="/">Terug naar Home</a>
-</body>
-</html>
+<h1>Welkom bij je Dashboard, <%= user.name %></h1>
+
+<div class="dashboard-container">
+    <div class="dashboard-card">
+        <a href="/mijnMoestuinUpdates">
+            <img src="/images/moestuin-updates.jpg" alt="Moestuin Updates" class="dashboard-card-image">
+            <div class="dashboard-card-content">
+                <h3>Mijn Moestuin Updates</h3>
+                <p>Bekijk de voortgang van je moestuin en ontvang tips.</p>
+            </div>
+        </a>
+    </div>
+
+    <div class="dashboard-card">
+        <a href="/groenteselectie">
+            <img src="/images/groente-selectie.jpg" alt="Groente Selectie" class="dashboard-card-image">
+            <div class="dashboard-card-content">
+                <h3>Groente Selectie</h3>
+                <p>Kies de groenten die je wilt verbouwen in je moestuin.</p>
+            </div>
+        </a>
+    </div>
+</div>

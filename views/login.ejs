@@ -10,24 +10,20 @@
     <div class="container">
         <h2>Login</h2>
         
-        <% if(typeof errors != 'undefined'){ %>
-            <% errors.forEach(function(error) { %>
-                <div class="alert alert-danger"><%= error.msg %></div>
-            <% }); %>
+        <% if(messages.error){ %>
+            <% if(Array.isArray(messages.error)){ %>
+                <% messages.error.forEach(function(error) { %>
+                    <div class="alert alert-danger"><%= error %></div>
+                <% }); %>
+            <% } else { %>
+                <div class="alert alert-danger"><%= messages.error %></div>
+            <% } %>
         <% } %>
-
-        <% if(typeof success_msg != 'undefined' && success_msg != ''){ %>
-            <div class="alert alert-success"><%= success_msg %></div>
+    
+        <% if(messages.success){ %>
+            <div class="alert alert-success"><%= messages.success %></div>
         <% } %>
-
-        <% if(typeof error_msg != 'undefined' && error_msg != ''){ %>
-            <div class="alert alert-danger"><%= error_msg %></div>
-        <% } %>
-
-        <% if(typeof error != 'undefined' && error != ''){ %>
-            <div class="alert alert-danger"><%= error %></div>
-        <% } %>
-
+    
         <form action="/juser/login" method="POST">
             <div>
                 <label for="email">Email</label>

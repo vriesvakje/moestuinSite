@@ -62,7 +62,7 @@ router.post('/register', async (req, res) => {
         // Het hashing proces wordt afgehandeld door het User model
         await newUser.save();
         console.log('Gebruiker succesvol geregistreerd:', newUser);
-        req.flash('success_msg', 'Je bent nu geregistreerd en kan inloggen');
+        req.flash('success', 'Je bent nu geregistreerd en kan inloggen');
         res.redirect('/juser/login');
       }
     } catch (err) {
@@ -85,7 +85,7 @@ router.post('/login', (req, res, next) => {
 router.get('/logout', (req, res, next) => {
   req.logout((err) => {
     if (err) { return next(err); }
-    req.flash('success_msg', 'Je bent uitgelogd');
+    req.flash('success', 'Je bent uitgelogd');
     res.redirect('/juser/login');
   });
 });
