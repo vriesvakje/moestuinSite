@@ -7,10 +7,11 @@ const session = require('express-session');
 const flash = require('express-flash');
 const connectDB = require('./db');
 const rateLimit = require('express-rate-limit');
+const warmUp = require('./warmup');
 require('dotenv').config();
 
 const app = express();
-const port = process.env.PORT || 3000;
+let isWarmedUp = false;
 
 console.log('Express app is geïnitialiseerd');
 
@@ -20,24 +21,27 @@ app.use((req, res, next) => {
   next();
 });
 
+// Health check route
+app.get('/health', (req, res) => {
+  if (isWarmedUp) {
+    res.status(200).json({ status: 'OK', message: 'Server is warmed up and ready' });
+  } else {
+    res.status(503).json({ status: 'Not Ready', message: 'Server is still warming up' });
+  }
+});
+
 // Rate limiter
-
 app.set('trust proxy', 1);
-
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 200,
   standardHeaders: true,
   legacyHeaders: false,
 });
-
 app.use(limiter);
 
 // Passport config
 require('./config/passport')(passport);
-
-// Connect to MongoDB
-connectDB();
 
 // EJS setup
 app.use(expressLayouts);
@@ -51,9 +55,14 @@ app.use(express.json());
 
 // Express Session
 app.use(session({
-  secret: 'secret',
-  resave: true,
-  saveUninitialized: true
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: true,
+  cookie: { 
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000
+  }
 }));
 
 // Passport middleware
@@ -62,8 +71,6 @@ app.use(passport.session());
 
 // Connect Flash
 app.use(flash());
-
-
 
 // Static files
 app.use(express.static(path.join(__dirname, 'public')));
@@ -79,8 +86,6 @@ app.get('/initiate-payment', (req, res) => {
   console.log('Initiate payment route aangeroepen');
   res.render('initiate-payment');
 });
-
-
 
 app.use('/', indexRoutes);
 app.use('/juser', userRoutes);
@@ -98,10 +103,23 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start the server
-app.listen(port, () => {
-  console.log(`Server draait op http://localhost:${port}`);
-  console.log('Server is klaar om requests te ontvangen');
-});
+async function startServer() {
+  try {
+    await connectDB();
+    await warmUp(app);
+    isWarmedUp = true;
+    
+    const port = process.env.PORT || 3000;
+    app.listen(port, () => {
+      console.log(`Server is volledig opgewarmd en draait op http://localhost:${port}`);
+      console.log('Server is klaar om requests te ontvangen');
+    });
+  } catch (error) {
+    console.error('Kritieke fout bij het opstarten van de server:', error);
+    process.exit(1);
+  }
+}
+
+startServer();
 
 module.exports = app;
