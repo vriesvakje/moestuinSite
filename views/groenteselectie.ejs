@@ -1,6 +1,8 @@
 <h1>Kies Je Groenten</h1>
 <p>Selecteer de groenten die je in je persoonlijke moestuin wilt laten groeien. Wij zorgen ervoor dat ze perfect worden gekweekt!</p>
 
+
+
 <div class="vegetable-grid">
     <div class="vegetable-card">
         <img src="https://page-images.websim.ai/Tomaat_1024x847xUjSTjLyJRSfAkP9YQx70fc57c9626ba.jpg" alt="Tomaat" alt="Tomaat">
@@ -46,7 +48,19 @@
     <button onclick="submitSelection()">Bevestig Selectie</button>
 </div>
 
+<h1>Groenteselectie</h1>
+  <form id="vegetableForm" method="POST" action="/save-selection">
+    <% vegetables.forEach(function(vegetable) { %>
+      <div>
+        <input type="checkbox" name="vegetables" value="<%= vegetable.name %>" <%= vegetable.selected ? 'checked' : '' %>> <%= vegetable.name %>
+      </div>
+    <% }) %>
+    <button type="submit">Opslaan</button>
+  </form>
+  <a href="/mijn-selectie">Terug naar Mijn Groenteselectie</a>
+
 <script>
+    const csrfToken = '<%= csrfToken %>';
     let selectedVegetables = [];
     
     function selectVegetable(vegetable) {
@@ -76,26 +90,50 @@
     }
     
     function submitSelection() {
-        if (selectedVegetables.length === 0) {
-            alert('Selecteer alstublieft minimaal één groente.');
-            return;
-        }
-        
-        fetch('/save-selection', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ vegetables: selectedVegetables }),
-        })
-        .then(response => response.json())
-        .then(data => {
-            alert('Je selectie is opgeslagen. Ga naar "Mijn Selectie" om je keuzes te bekijken.');
-            window.location.href = '/mijn-selectie';
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-            alert('Er is een fout opgetreden bij het opslaan van je selectie.');
-        });
+    if (selectedVegetables.length === 0) {
+        alert('Selecteer alstublieft minimaal één groente.');
+        return;
     }
+    
+    
+    fetch('/save-selection', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'CSRF-Token': csrfToken
+        },
+        body: JSON.stringify({ vegetables: selectedVegetables }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert('Je selectie is opgeslagen. Ga naar "Mijn Selectie" om je keuzes te bekijken.');
+        window.location.href = '/mijn-selectie';
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+        alert('Er is een fout opgetreden bij het opslaan van je selectie.');
+    });
+}
+
+document.getElementById('vegetableForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const selectedVegetables = Array.from(document.querySelectorAll('input[name="vegetables"]:checked')).map(cb => cb.value);
+      fetch('/save-selection', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'CSRF-Token': '<%= csrfToken %>' // Voeg CSRF-token toe als je CSRF-bescherming gebruikt
+        },
+        body: JSON.stringify({ vegetables: selectedVegetables })
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log(data.message);
+        // Je kunt hier een bericht aan de gebruiker tonen dat de selectie is opgeslagen
+        window.location.href = '/mijn-selectie'; // Verwijs de gebruiker naar de "Mijn Groenteselectie" pagina na het opslaan
+      })
+      .catch(error => console.error('Error:', error));
+    });
+
+
     </script>

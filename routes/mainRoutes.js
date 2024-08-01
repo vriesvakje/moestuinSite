@@ -67,10 +67,7 @@ router.get('/payment-canceled', (req, res) => renderPage(res, 'payment-canceled'
 router.get('/payment-expired', (req, res) => renderPage(res, 'payment-expired', { title: 'Betaling Verlopen', user: req.user }));
 
 // Geauthenticeerde routes
-router.get('/groenteselectie', ensureAuthenticated, async (req, res) => {
-  const vegetables = await Vegetable.find();
-  renderPage(res, 'groenteselectie', { title: 'Groenteselectie', vegetables, user: req.user });
-});
+
 
 router.get('/mijnMoestuinUpdates', ensureAuthenticated, (req, res) => {
   renderPage(res, 'mijnMoestuinUpdates', { title: 'Mijn Moestuin Updates', user: req.user });
@@ -164,11 +161,28 @@ router.post('/reset-password/:token', async (req, res) => {
 // Groenteselectie opslaan
 router.post('/save-selection', ensureAuthenticated, async (req, res) => {
   try {
+    console.log(req.body); // Log de ontvangen data voor debugging
     await Vegetable.updateMany({}, { selected: false });
     await Vegetable.updateMany({ name: { $in: req.body.vegetables } }, { selected: true });
     res.json({ message: 'Selectie opgeslagen' });
   } catch (error) {
+    console.error('Error saving selection:', error); // Log eventuele fouten
     res.status(500).json({ message: 'Fout bij opslaan van selectie' });
+  }
+});
+
+
+router.get('/groenteselectie', ensureAuthenticated, async (req, res) => {
+  try {
+    const vegetables = await Vegetable.find();
+    renderPage(res, 'groenteselectie', { 
+      title: 'Groenteselectie',
+      vegetables: vegetables,
+      user: req.user,
+      csrfToken: req.csrfToken() // Voeg deze regel toe als je CSRF-bescherming gebruikt
+    });
+  } catch (error) {
+    handleError(res, error, '/');
   }
 });
 

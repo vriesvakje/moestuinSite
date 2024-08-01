@@ -7,6 +7,7 @@
   </ul>
 <% } %>
 <form action="/juser/register" method="POST">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
   <div>
     <label for="name">Naam</label>
     <input type="text" name="name" value="<%= typeof name !== 'undefined' ? name : '' %>" required>
