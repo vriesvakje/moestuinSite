@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Start Betaling</title>
     <link rel="stylesheet" href="/css/style.css">
+    <meta name="csrf-token" content="<%= csrfToken %>">
 </head>
 <body>
     <h1>Start uw betaling</h1>
@@ -12,10 +13,13 @@
 
     <script>
     function startPayment() {
+        const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        
         fetch('/payments/create-payment', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'CSRF-Token': token
             },
             body: JSON.stringify({
                 // Voeg hier eventuele benodigde betalingsgegevens toe

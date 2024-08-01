@@ -1,10 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const { createMollieClient } = require('@mollie/api-client');
+const csrf = require('csurf');
 
 const mollieClient = createMollieClient({ apiKey: process.env.MOLLIE_API_KEY });
 
-router.post('/create-payment', async (req, res) => {
+// CSRF protection middleware
+const csrfProtection = csrf({ cookie: true });
+
+router.post('/create-payment', csrfProtection, async (req, res) => {
   console.log('Sessie voor het maken van de betaling:', req.session);
   try {
     const payment = await mollieClient.payments.create({

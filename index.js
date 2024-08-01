@@ -7,10 +7,12 @@ const session = require('express-session');
 const flash = require('express-flash');
 const connectDB = require('./db');
 const rateLimit = require('express-rate-limit');
+const csrf = require('csurf');
+const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
 const app = express();
-const port = process.env.PORT || 3000;
+
 
 console.log('Express app is geïnitialiseerd');
 
@@ -49,6 +51,9 @@ app.set('layout', 'layout');
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
+// Cookie parser
+app.use(cookieParser());
+
 // Express Session
 app.use(session({
   secret: 'secret',
@@ -63,7 +68,15 @@ app.use(passport.session());
 // Connect Flash
 app.use(flash());
 
+// CSRF Protection
+const csrfProtection = csrf({ cookie: true });
+app.use(csrfProtection);
 
+// Make csrfToken available to all views
+app.use((req, res, next) => {
+  res.locals.csrfToken = req.csrfToken();
+  next();
+});
 
 // Static files
 app.use(express.static(path.join(__dirname, 'public')));
@@ -99,6 +112,7 @@ app.use((err, req, res, next) => {
 });
 
 // Start the server
+const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Server draait op http://localhost:${port}`);
   console.log('Server is klaar om requests te ontvangen');
