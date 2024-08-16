@@ -13,7 +13,6 @@ require('dotenv').config();
 
 const app = express();
 
-
 console.log('Express app is geïnitialiseerd');
 
 // Algemene middleware voor logging
@@ -23,7 +22,6 @@ app.use((req, res, next) => {
 });
 
 // Rate limiter
-
 app.set('trust proxy', 1);
 
 const limiter = rateLimit({
@@ -34,9 +32,6 @@ const limiter = rateLimit({
 });
 
 app.use(limiter);
-
-// Passport config
-require('./config/passport')(passport);
 
 // Connect to MongoDB
 connectDB();
@@ -56,10 +51,18 @@ app.use(cookieParser());
 
 // Express Session
 app.use(session({
-  secret: 'secret',
-  resave: true,
-  saveUninitialized: true
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: true,
+  cookie: { 
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000 // 24 uur
+  }
 }));
+
+// Passport config
+require('./config/passport')(passport);
 
 // Passport middleware
 app.use(passport.initialize());
@@ -70,11 +73,16 @@ app.use(flash());
 
 // CSRF Protection
 const csrfProtection = csrf({ cookie: true });
-app.use(csrfProtection);
+app.use((req, res, next) => {
+  if (req.path === '/payments/webhook') {
+    return next();
+  }
+  csrfProtection(req, res, next);
+});
 
 // Make csrfToken available to all views
 app.use((req, res, next) => {
-  res.locals.csrfToken = req.csrfToken();
+  res.locals.csrfToken = req.csrfToken ? req.csrfToken() : null;
   next();
 });
 
@@ -92,8 +100,6 @@ app.get('/initiate-payment', (req, res) => {
   console.log('Initiate payment route aangeroepen');
   res.render('initiate-payment');
 });
-
-
 
 app.use('/', indexRoutes);
 app.use('/juser', userRoutes);

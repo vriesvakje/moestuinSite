@@ -1,12 +1,42 @@
 <h1>Mijn Groenteselectie</h1>
+  <% if (vegetables.length > 0) { %>
+    <ul>
+      <% vegetables.forEach(function(vegetable) { %>
+        <li>
+         <div class="item">
+          <%= vegetable %>
+          <form class="remove-form" method="POST" action="/remove-selection" style="display:inline;">
+            <input type="hidden" name="vegetable" value="<%= vegetable %>">
+            <button class="btn-mijn-selectie"type="submit">Verwijder</button>
+          </form>
+        </div>
+        </li>
+      <% }) %>
+    </ul>
+  <% } else { %>
+    <p>Je hebt nog geen groenten geselecteerd. Ga naar de <a href="/groenteselectie">Groenteselectie</a> pagina om je keuze te maken.</p>
+  <% } %>
+  <a href="/groenteselectie">Terug naar Groenteselectie</a>
 
-<% if (vegetables.length > 0) { %>
-  <ul>
-    <% vegetables.forEach(function(vegetable) { %>
-      <li><%= vegetable %></li>
-    <% }) %>
-  </ul>
-<% } else { %>
-  <p>Je hebt nog geen groenten geselecteerd. Ga naar de <a href="/groenteselectie">Groenteselectie</a> pagina om je keuze te maken.</p>
-<% } %>
-<a href="/groenteselectie">Terug naar Groenteselectie</a>
+  <script>
+    document.querySelectorAll('.remove-form').forEach(form => {
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        fetch('/remove-selection', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'CSRF-Token': '<%= csrfToken %>' // Voeg CSRF-token toe als je CSRF-bescherming gebruikt
+          },
+          body: JSON.stringify({ vegetable: this.vegetable.value })
+        })
+        .then(response => response.json())
+        .then(data => {
+          console.log(data.message);
+          // Herlaad de pagina om de bijgewerkte selectie te tonen
+          window.location.reload();
+        })
+        .catch(error => console.error('Error:', error));
+      });
+    });
+  </script>

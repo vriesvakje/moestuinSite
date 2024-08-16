@@ -8,34 +8,52 @@ const mollieClient = createMollieClient({ apiKey: process.env.MOLLIE_API_KEY });
 // CSRF protection middleware
 const csrfProtection = csrf({ cookie: true });
 
-router.post('/create-payment', csrfProtection, async (req, res) => {
+// Gebruik csrfProtection voor alle routes behalve de webhook
+router.use((req, res, next) => {
+  if (req.path === '/webhook') {
+    return next();
+  }
+  csrfProtection(req, res, next);
+});
+
+// Logging middleware
+const logRequest = (req, res, next) => {
+  console.log(`${req.method} ${req.path} werd aangeroepen`);
+  next();
+};
+
+router.use(logRequest);
+
+router.post('/create-payment', async (req, res) => {
+  console.log('NGROK_URL from env:', process.env.NGROK_URL);
   console.log('Sessie voor het maken van de betaling:', req.session);
   try {
+    const baseRedirectUrl = `${process.env.NGROK_URL}/payment-open`;
     const payment = await mollieClient.payments.create({
       amount: {
         currency: 'EUR',
         value: '10.00' // Vervang dit met het juiste bedrag
       },
       description: 'Moestuin huur',
-      redirectUrl: `${process.env.NGROK_URL}/payment-open`,
+      redirectUrl: baseRedirectUrl,
       webhookUrl: `${process.env.NGROK_URL}/payments/webhook`,
       method: 'ideal'
     });
 
     console.log('Mollie betaling gecreëerd:', payment);
     
-    // Update de redirectUrl met de payment ID
-    const updatedRedirectUrl = `${payment.redirectUrl}?paymentId=${payment.id}`;
+    const updatedRedirectUrl = `${baseRedirectUrl}?paymentId=${payment.id}`;
     
     // Sla de paymentId op in de sessie en wacht tot de sessie is opgeslagen
     await new Promise((resolve, reject) => {
       req.session.paymentId = payment.id;
+      req.session.redirectUrl = updatedRedirectUrl;
       req.session.save(err => {
         if (err) {
           console.error('Fout bij het opslaan van de sessie:', err);
           reject(err);
         } else {
-          console.log('PaymentId opgeslagen in sessie:', req.session.paymentId);
+          console.log('PaymentId en redirectUrl opgeslagen in sessie:', req.session.paymentId, req.session.redirectUrl);
           resolve();
         }
       });
@@ -48,11 +66,13 @@ router.post('/create-payment', csrfProtection, async (req, res) => {
     });
   } catch (error) {
     console.error('Fout bij het maken van de betaling:', error);
+    console.error('Error details:', error.details);
     res.status(500).json({ error: 'Er is een fout opgetreden bij het verwerken van je betaling' });
   }
 });
 
 router.post('/webhook', async (req, res) => {
+  console.log('Webhook aangeroepen. Body:', req.body);
   try {
     const payment = await mollieClient.payments.get(req.body.id);
     console.log('Webhook ontvangen voor betaling:', payment.id);
@@ -87,17 +107,14 @@ router.post('/webhook', async (req, res) => {
 
 router.get('/check-payment-status', async (req, res) => {
   console.log('Sessie bij status check:', req.session);
-  try {
-    const paymentId = req.query.paymentId || req.session.paymentId;
-    
-    if (!paymentId) {
-      console.log('Geen paymentId gevonden in query of sessie, wacht even...');
-      await new Promise(resolve => setTimeout(resolve, 3000)); // Wacht 3 seconden
-      if (!req.session.paymentId) {
-        return res.redirect('/payment-failed');
-      }
-    }
+  const paymentId = req.query.paymentId || req.session.paymentId;
+  
+  if (!paymentId) {
+    console.log('Geen paymentId gevonden in query of sessie');
+    return res.redirect('/payment-failed');
+  }
 
+  try {
     console.log('Controleren van betaling met ID:', paymentId);
     const payment = await mollieClient.payments.get(paymentId);
     console.log('Betaling status:', payment.status);
@@ -126,6 +143,7 @@ router.get('/check-payment-status', async (req, res) => {
     if (redirectUrl !== '/payment-open') {
       // Als de betaling is afgerond, verwijder de paymentId uit de sessie
       delete req.session.paymentId;
+      delete req.session.redirectUrl;
     }
 
     res.redirect(redirectUrl);

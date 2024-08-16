@@ -162,14 +162,39 @@ router.post('/reset-password/:token', async (req, res) => {
 router.post('/save-selection', ensureAuthenticated, async (req, res) => {
   try {
     console.log(req.body); // Log de ontvangen data voor debugging
+
+    const selectedVegetables = req.body.vegetables;
+
+    // Reset de geselecteerde status van alle groenten
     await Vegetable.updateMany({}, { selected: false });
-    await Vegetable.updateMany({ name: { $in: req.body.vegetables } }, { selected: true });
+
+    // Update de nieuwe selectie
+    await Vegetable.updateMany({ name: { $in: selectedVegetables } }, { selected: true });
+
     res.json({ message: 'Selectie opgeslagen' });
   } catch (error) {
     console.error('Error saving selection:', error); // Log eventuele fouten
     res.status(500).json({ message: 'Fout bij opslaan van selectie' });
   }
 });
+
+
+// verwijderen van groente
+router.post('/remove-selection', ensureAuthenticated, async (req, res) => {
+  try {
+    const vegetableToRemove = req.body.vegetable;
+    console.log('Verwijderen van groente:', vegetableToRemove); // Debugging
+
+    const result = await Vegetable.updateOne({ name: vegetableToRemove }, { selected: false });
+    console.log('Update resultaat:', result); // Debugging
+
+    res.json({ message: 'Selectie verwijderd' });
+  } catch (error) {
+    console.error('Error removing selection:', error); // Log eventuele fouten
+    res.status(500).json({ message: 'Fout bij verwijderen van selectie' });
+  }
+});
+
 
 
 router.get('/groenteselectie', ensureAuthenticated, async (req, res) => {
