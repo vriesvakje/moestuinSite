@@ -6,81 +6,79 @@ const Vegetable = require('../models/Vegetable');
 const User = require('../models/User');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
+const csrf = require('csurf');
+
+const csrfProtection = csrf({ cookie: true });
 
 // Hulpfuncties
 const renderPage = (res, page, options) => {
-  res.render(page, { ...options, user: options.user });
+  res.render(page, { ...options, user: options.user, csrfToken: options.csrfToken });
 };
 
-const handleError = (res, error, redirectPath) => {
+const handleError = (req, res, error, redirectPath) => {
   console.error(`Error: ${error.message}`, error);
   req.flash('error', 'Er is een fout opgetreden. Probeer het later opnieuw.');
   res.redirect(redirectPath);
 };
 
 // Openbare routes
-router.get('/', (req, res) => renderPage(res, 'home', { title: 'Welkom bij Moestuin Verhuur', user: req.user }));
-router.get('/beschikbaar', (req, res) => renderPage(res, 'beschikbaar', { title: 'Beschikbare Moestuinen', user: req.user }));
-router.get('/huren', (req, res) => renderPage(res, 'huren', { title: 'Huur een Moestuin', user: req.user }));
-router.get('/informatie', (req, res) => renderPage(res, 'informatie', { title: 'Informatie over Moestuinieren', user: req.user }));
-router.get('/contact', (req, res) => renderPage(res, 'contact', { title: 'Neem Contact Op', user: req.user }));
+router.get('/', csrfProtection, (req, res) => renderPage(res, 'home', { title: 'Welkom bij Moestuin Verhuur', user: req.user, csrfToken: req.csrfToken() }));
+router.get('/beschikbaar', csrfProtection, (req, res) => renderPage(res, 'beschikbaar', { title: 'Beschikbare Moestuinen', user: req.user, csrfToken: req.csrfToken() }));
+router.get('/huren', csrfProtection, (req, res) => renderPage(res, 'huren', { title: 'Huur een Moestuin', user: req.user, csrfToken: req.csrfToken() }));
+router.get('/informatie', csrfProtection, (req, res) => renderPage(res, 'informatie', { title: 'Informatie over Moestuinieren', user: req.user, csrfToken: req.csrfToken() }));
+router.get('/contact', csrfProtection, (req, res) => renderPage(res, 'contact', { title: 'Neem Contact Op', user: req.user, csrfToken: req.csrfToken() }));
 
 // Huur aanvraag
-router.post('/huren', async (req, res) => {
+router.post('/huren', csrfProtection, async (req, res) => {
   try {
     await sendNotificationEmail(req.body);
-    renderPage(res, 'huren-bevestiging', { title: 'Aanvraag Ontvangen', user: req.user });
+    renderPage(res, 'huren-bevestiging', { title: 'Aanvraag Ontvangen', user: req.user, csrfToken: req.csrfToken() });
   } catch (error) {
-    handleError(res, error, '/huren');
+    handleError(req, res, error, '/huren');
   }
 });
 
-router.get('/dashboard', ensureAuthenticated, async (req, res) => {
+router.get('/dashboard', ensureAuthenticated, csrfProtection, async (req, res) => {
   try {
     const vegetables = await Vegetable.find();
     renderPage(res, 'dashboard', { 
       title: 'Dashboard',
       user: req.user, 
-      vegetables: vegetables 
+      vegetables: vegetables,
+      csrfToken: req.csrfToken()
     });
   } catch (error) {
     console.error('Error fetching vegetables:', error);
-    handleError(res, error, '/');
+    handleError(req, res, error, '/');
   }
 });
 
 // Contact formulier
-router.post('/contact', async (req, res) => {
+router.post('/contact', csrfProtection, async (req, res) => {
   try {
     await sendNotificationEmail(req.body);
-    renderPage(res, 'contact-bevestiging', { title: 'Bericht Ontvangen', user: req.user });
+    renderPage(res, 'contact-bevestiging', { title: 'Bericht Ontvangen', user: req.user, csrfToken: req.csrfToken() });
   } catch (error) {
-    handleError(res, error, '/contact');
+    handleError(req, res, error, '/contact');
   }
 });
 
 // Betalingsroutes
-router.get('/payment-success', (req, res) => renderPage(res, 'payment-success', { title: 'Betaling Succesvol', user: req.user }));
-router.get('/payment-open', (req, res) => renderPage(res, 'payment-open', { title: 'Betaling in Behandeling', user: req.user }));
-router.get('/payment-failed', (req, res) => renderPage(res, 'payment-failed', { title: 'Betaling Mislukt', user: req.user }));
-router.get('/payment-canceled', (req, res) => renderPage(res, 'payment-canceled', { title: 'Betaling Geannuleerd', user: req.user }));
-router.get('/payment-expired', (req, res) => renderPage(res, 'payment-expired', { title: 'Betaling Verlopen', user: req.user }));
+router.get('/payment-success', csrfProtection, (req, res) => renderPage(res, 'payment-success', { title: 'Betaling Succesvol', user: req.user, csrfToken: req.csrfToken() }));
+router.get('/payment-open', csrfProtection, (req, res) => renderPage(res, 'payment-open', { title: 'Betaling in Behandeling', user: req.user, csrfToken: req.csrfToken() }));
+router.get('/payment-failed', csrfProtection, (req, res) => renderPage(res, 'payment-failed', { title: 'Betaling Mislukt', user: req.user, csrfToken: req.csrfToken() }));
+router.get('/payment-canceled', csrfProtection, (req, res) => renderPage(res, 'payment-canceled', { title: 'Betaling Geannuleerd', user: req.user, csrfToken: req.csrfToken() }));
+router.get('/payment-expired', csrfProtection, (req, res) => renderPage(res, 'payment-expired', { title: 'Betaling Verlopen', user: req.user, csrfToken: req.csrfToken() }));
 
 // Geauthenticeerde routes
-
-
-router.get('/mijnMoestuinUpdates', ensureAuthenticated, (req, res) => {
-  renderPage(res, 'mijnMoestuinUpdates', { title: 'Mijn Moestuin Updates', user: req.user });
-});
-
-router.get('/dashboard', ensureAuthenticated, (req, res) => {
-  renderPage(res, 'dashboard', { user: req.user });
+router.get('/mijnMoestuinUpdates', ensureAuthenticated, csrfProtection, (req, res) => {
+  renderPage(res, 'mijnMoestuinUpdates', { title: 'Mijn Moestuin Updates', user: req.user, csrfToken: req.csrfToken() });
 });
 
 // Wachtwoord reset functionaliteit
-router.get('/forgot-password', (req, res) => renderPage(res, 'forgot-password', { title: 'Wachtwoord Vergeten' }));
+router.get('/forgot-password', csrfProtection, (req, res) => renderPage(res, 'forgot-password', { title: 'Wachtwoord Vergeten', csrfToken: req.csrfToken() }));
 
-router.post('/forgot-password', async (req, res) => {
+router.post('/forgot-password', csrfProtection, async (req, res) => {
   try {
     const user = await User.findOne({ email: req.body.email });
     if (!user) {
@@ -99,11 +97,11 @@ router.post('/forgot-password', async (req, res) => {
     req.flash('success', 'Een e-mail met resetinstructies is verzonden naar je e-mailadres.');
     res.redirect('/juser/login');
   } catch (error) {
-    handleError(res, error, '/forgot-password');
+    handleError(req, res, error, '/forgot-password');
   }
 });
 
-router.get('/reset-password/:token', async (req, res) => {
+router.get('/reset-password/:token', csrfProtection, async (req, res) => {
   try {
     const user = await User.findOne({
       resetPasswordToken: req.params.token,
@@ -120,14 +118,15 @@ router.get('/reset-password/:token', async (req, res) => {
       token: req.params.token,
       error_msg: req.flash('error'),
       success_msg: req.flash('success'),
-      user: req.user
+      user: req.user,
+      csrfToken: req.csrfToken()
     });
   } catch (error) {
-    handleError(res, error, '/forgot-password');
+    handleError(req, res, error, '/forgot-password');
   }
 });
 
-router.post('/reset-password/:token', async (req, res) => {
+router.post('/reset-password/:token', csrfProtection, async (req, res) => {
   try {
     const user = await User.findOne({
       resetPasswordToken: req.params.token,
@@ -154,74 +153,64 @@ router.post('/reset-password/:token', async (req, res) => {
     req.flash('success', 'Je wachtwoord is succesvol gewijzigd. Je kunt nu inloggen met je nieuwe wachtwoord.');
     res.redirect('/juser/login');
   } catch (error) {
-    handleError(res, error, '/forgot-password');
+    handleError(req, res, error, '/forgot-password');
   }
 });
 
 // Groenteselectie opslaan
-router.post('/save-selection', ensureAuthenticated, async (req, res) => {
+router.post('/save-selection', ensureAuthenticated, csrfProtection, async (req, res) => {
   try {
-    console.log(req.body); // Log de ontvangen data voor debugging
-
+    console.log(req.body);
     const selectedVegetables = req.body.vegetables;
-
-    // Reset de geselecteerde status van alle groenten
     await Vegetable.updateMany({}, { selected: false });
-
-    // Update de nieuwe selectie
     await Vegetable.updateMany({ name: { $in: selectedVegetables } }, { selected: true });
-
     res.json({ message: 'Selectie opgeslagen' });
   } catch (error) {
-    console.error('Error saving selection:', error); // Log eventuele fouten
+    console.error('Error saving selection:', error);
     res.status(500).json({ message: 'Fout bij opslaan van selectie' });
   }
 });
 
-
 // verwijderen van groente
-router.post('/remove-selection', ensureAuthenticated, async (req, res) => {
+router.post('/remove-selection', ensureAuthenticated, csrfProtection, async (req, res) => {
   try {
     const vegetableToRemove = req.body.vegetable;
-    console.log('Verwijderen van groente:', vegetableToRemove); // Debugging
-
+    console.log('Verwijderen van groente:', vegetableToRemove);
     const result = await Vegetable.updateOne({ name: vegetableToRemove }, { selected: false });
-    console.log('Update resultaat:', result); // Debugging
-
+    console.log('Update resultaat:', result);
     res.json({ message: 'Selectie verwijderd' });
   } catch (error) {
-    console.error('Error removing selection:', error); // Log eventuele fouten
+    console.error('Error removing selection:', error);
     res.status(500).json({ message: 'Fout bij verwijderen van selectie' });
   }
 });
 
-
-
-router.get('/groenteselectie', ensureAuthenticated, async (req, res) => {
+router.get('/groenteselectie', ensureAuthenticated, csrfProtection, async (req, res) => {
   try {
     const vegetables = await Vegetable.find();
     renderPage(res, 'groenteselectie', { 
       title: 'Groenteselectie',
       vegetables: vegetables,
       user: req.user,
-      csrfToken: req.csrfToken() // Voeg deze regel toe als je CSRF-bescherming gebruikt
+      csrfToken: req.csrfToken()
     });
   } catch (error) {
-    handleError(res, error, '/');
+    handleError(req, res, error, '/');
   }
 });
 
 // Mijn selectie pagina
-router.get('/mijn-selectie', ensureAuthenticated, async (req, res) => {
+router.get('/mijn-selectie', ensureAuthenticated, csrfProtection, async (req, res) => {
   try {
     const selectedVegetables = await Vegetable.find({ selected: true });
     renderPage(res, 'mijn-selectie', { 
       title: 'Mijn Groenteselectie',
       vegetables: selectedVegetables.map(v => v.name),
-      user: req.user
+      user: req.user,
+      csrfToken: req.csrfToken()
     });
   } catch (error) {
-    handleError(res, error, '/dashboard');
+    handleError(req, res, error, '/dashboard');
   }
 });
 
