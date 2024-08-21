@@ -4,7 +4,11 @@
   "description": "Een website voor het verhuren en beheren van moestuinen",
   "main": "index.js",
   "scripts": {
-    "test": "echo \\\"Error: no test specified\\\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon --ignore public/ index.js",
+    "postinstall": "patch-package",
+    "browser-sync": "browser-sync start --proxy 'localhost:3000' --files 'public/**/*.*' 'views/**/*.*' --ignore 'node_modules' --reload-delay 10 --no-ui --no-notify",
+    "start": "node index.js"
   },
   "keywords": [
     "\"moestuin\""
@@ -30,5 +34,15 @@
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
     "patch-package": "^8.0.0"
+  },
+  "overrides": {
+    "@mollie/api-client": {
+      "axios": "^1.0.0"
+    }
+  },
+  "devDependencies": {
+    "browser-sync": "^3.0.2",
+    "concurrently": "^8.2.2",
+    "nodemon": "^3.1.4"
   }
 }

@@ -84,6 +84,26 @@ const bcrypt = require('bcryptjs');
 
 
 // Start the server
-app.listen(port, () => {
-  console.log(`Server draait op http://localhost:${port}`);
+const PORT = process.env.PORT || 3000;
+
+const server = app.listen(PORT, () => {
+  console.log(`Server draait op http://localhost:${PORT}`);
+  
+  if (process.env.NODE_ENV !== 'production') {
+    const browserSync = require('browser-sync').create();
+    browserSync.init({
+      files: ['public/**/*.{js,css}', 'views/**/*.ejs'],
+      open: false,
+      port: 3001,
+      proxy: `localhost:${PORT}`,
+      ui: false,
+      notify: false,
+      reloadDelay: 1000,
+      reloadDebounce: 1000
+    }, function(err, bs) {
+      console.log('BrowserSync is running on port 3001');
+    });
+  }
 });
+
+module.exports = app;
