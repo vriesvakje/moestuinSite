@@ -1,19 +1,19 @@
 <h1>Mijn Groenteselectie</h1>
-  <% if (vegetables.length > 0) { %>
-    <ul>
-      <% vegetables.forEach(function(vegetable) { %>
-        <li>
-         <div class="item">
+<% if (typeof vegetables !== 'undefined' && vegetables.length > 0) { %>
+  <ul>
+    <% vegetables.forEach(function(vegetable) { %>
+      <li>
+        <div class="item">
           <%= vegetable %>
           <form class="remove-form" method="POST" action="/remove-selection" style="display:inline;">
             <input type="hidden" name="vegetable" value="<%= vegetable %>">
-            <button class="btn-mijn-selectie"type="submit">Verwijder</button>
+            <button class="btn-mijn-selectie" type="submit">Verwijder</button>
           </form>
         </div>
-        </li>
-      <% }) %>
-    </ul>
-  <% } else { %>
+      </li>
+    <% }); %>
+  </ul>
+<% } else { %>
     <p>Je hebt nog geen groenten geselecteerd. Ga naar de <a href="/groenteselectie">Groenteselectie</a> pagina om je keuze te maken.</p>
   <% } %>
   <a href="/groenteselectie">Terug naar Groenteselectie</a>

@@ -93,6 +93,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 const indexRoutes = require('./routes/mainRoutes');
 const userRoutes = require('./routes/users');
 const paymentRoutes = require('./routes/paymentRoutes');
+const contactRoutes = require('./routes/contactRoutes');
+const rentalRoutes = require('./routes/rentalRoutes');
+const passwordResetRoutes = require('./routes/passwordResetRoutes');
+const vegetableRoutes = require('./routes/vegetableRoutes');
 
 console.log('Routes worden geladen');
 
@@ -104,6 +108,10 @@ app.get('/initiate-payment', (req, res) => {
 app.use('/', indexRoutes);
 app.use('/juser', userRoutes);
 app.use('/payments', paymentRoutes);
+app.use('/contact', contactRoutes);
+app.use('/huren', rentalRoutes);
+app.use('/', passwordResetRoutes);
+app.use('/', vegetableRoutes);
 
 console.log('Alle routes zijn toegevoegd aan de app');
 
